@@ -1,0 +1,94 @@
+body { 
+  /*--- Background Color ---*/
+  background-color: #212121;
+  height: 100%;
+  margin: 0 0 0 0;
+}
+.login-box{
+  /*--- Dimensions ---*/
+  width: 15%;
+  height: 20%;
+  /*--- Positioning ---*/
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 25%;
+
+}
+.login-box input{
+  /*--- Background Color ---*/
+  background-color: #FFFFFF;
+  /*--- Rounded Corners ---*/
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  border: solid 2px #545454;
+
+}
+.login-box td{
+  color: #139608;
+  font-weight: normal;
+  font-family: Impact;
+  /*text-shadow: 0.1em 0.05em 0.05em #61F553;*/
+}
+h3{
+  font-family: Impact;
+  float: center;
+  margin: 0 0 0 0;
+  font-size: 8.7em;
+  color: #139608;
+  font-weight: bold;
+  text-shadow: 0 2px 3px #111;
+
+}
+
+#rbs-container {
+width: 100%; height: 100%; position: absolute;
+}
+#rbs-sidebar {
+width: 20%; height: 100%;float: left;
+}
+#rbs-main {
+width: 80%; height: 100%;float: left;background-color: #FFF;
+}
+.rbs-sidebar-ul li{
+  list-style-type: none;
+  padding: 0 0 0 10%;
+  margin: 0;
+  color: #139608;
+  font-size: 1.4em;
+
+}
+.rbs-sidebar-ul a{
+  background-color: white;
+  width: 9em;
+  padding: 3px 12px 3px 8px;
+  text-decoration: none;
+  display: block;
+  color: #212121;
+}
+.rbs-sidebar-ul a:hover{
+  background-color: #212121;
+  color: white;
+}
+.rbs-sidebar-ul li li{
+  font-size: 0.9em;
+  padding-left: 7%;
+}
+.rbs-sidebar-ul ul{
+  list-style-type: none;
+  margin: 0 0 0 0;
+  padding: 0;
+  color: #139608;
+}
+.rbs-sidebar-ul li a{
+  background-color: white;
+  width: 9em;
+  padding: 3px 12px 3px 8px;
+  text-decoration: none;
+  display: block;
+  color: #212121;
+}
+.rbs-sidebar-ul li a:hover{
+  background-color: #212121;
+  color: white;
+}
+.

@@ -1,13 +1,16 @@
 <!DOCTYPE html>
   <head>
-    <title>RH RBS</title>
-    <link href="base.css" rel="stylesheet" type="text/css">
+    <title>RBS</title>
+    <link href="./static/default.css" rel="stylesheet" type="text/css">
   </head>
   <body>
-    <div id="container">
-      <h3>Hello I am the Container</h3>
+    <div id="rbs-container">
+      <div id='rbs-sidebar'> 
       %extends sidebar.phtml %end
+      </div>
+      <div id='rbs-main'>
       %extends main.phtml %end
+      </div>
     </div>
   </body>
 </html>
