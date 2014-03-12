@@ -24,18 +24,22 @@ function rbs_resident(){
   this.resp = ''; 
 }
 var method = rbs_resident.prototype;
-method.addUser = function(){
+function rbs_addUser(user_matric, user_pass, user_gender, user_email, user_name, user_group, user_points, user_room){
   //Add a new hash
-  client.HMSET(this.user_matric, {
-    "user_pass" : md5(this.user_pass+'raffleshallrox'),
-    "user_gender" : this.user_gender,
-    "user_email" : this.user_email,
-    "user_name" : this.user_name,
-    "user_group" : this.user_group,
-    "user_points" : this.user_points,
-    "user_room" : this.user_room}, redis.print);
-    
-i};
+  client.HMSET(user_matric, {
+    "user_pass" : md5(user_pass+'raffleshallrox'),
+    "user_gender" : user_gender,
+    "user_email" : user_email,
+    "user_name" : user_name,
+    "user_group" : user_group,
+    "user_points" : user_points,
+    "user_room" : user_room}, redis.print);
+  //console.log('Added user: ' + this.user_matric);
+  //Update the list of residents
+  var args = user_matric;
+  client.lpush('rbs_residents', args, redis.print);
+  return true;    
+};
 function rbs_authfail(response){
   response.writeHead(302, {
          'Content-Type': 'text/plain',
@@ -103,5 +107,5 @@ method.delUser = function(){
   //Delete a user hash
   client.del(this.user_matric, redis.print);
 }
-exports.resident = rbs_resident;
+exports.addUser = rbs_addUser;
 exports.auth = rbs_auth;

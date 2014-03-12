@@ -15,7 +15,7 @@ var querystring =  require('querystring');
 *
 -------------------------------------*/  
 
-function start(response, postData, cookies){
+function start(response, postData, cookies, query){
 /* We are now going to pass the response function and postData into the template function asyncronously  as this is good practice. The below function will be kept commented for reference
 *
 *
@@ -49,11 +49,12 @@ if( cookies['rbs_group'] == 'admin' )
       if(err){
         return console.log(err);
       }
-      var t = Template.render(data);
-      response.writeHead(200,{
+      block = 'admin';
+      var t = Template.render(data, response, block);
+/*      response.writeHead(200,{
         'Content-Type' : 'text/html'});
       response.write(t);
-      response.end();
+      response.end();*/
     });
 
 }
@@ -68,7 +69,7 @@ start.prototype.reqCookie = ['rbs_user','rbs_group'];
 * Login Handler
 *
 -------------------------------------*/  
-function login(response, postData, cookies){
+function login(response, postData, cookies, query){
   //Handle the login and check for postData
   //If no postData, show the login form
   //If there is, establish a redis connection and either redirect to home or login page
@@ -82,18 +83,19 @@ function login(response, postData, cookies){
   //console.log('Len: ' + postObj_len);
   if ( postData == '' )
   {
-    console.log('No post variables found...');
+    //console.log('No post variables found...');
     //Empty post format
     //Show login form
     var file_content = fs.readFile(base_path + '/login/login-box.phtml','utf8', function(err, data){
       if(err){
         return console.log(err);
       }
-      var t = Template.render(data);
-      response.writeHead(200,{
+      var block = '';
+      var t = Template.render(data, response, block);
+      /*response.writeHead(200,{
         'Content-Type' : 'text/html'});
       response.write(t);
-      response.end();
+      response.end();*/
     });
   }
   else{
@@ -114,6 +116,77 @@ function login(response, postData, cookies){
  */
 }
 login.prototype.reqCookie = [];
+/*-------------------------------------
+* Add Resident Handler
+*
+-------------------------------------*/  
+function add_resident(response, postData, cookies, query){
+  if( cookies['rbs_group'] != 'admin' )
+  {
+     response.writeHead('404',{'Content-Type':'text/plain'});
+     response.write('You do not have permission to enter');
+     response.end();
+ }
+
+
+  if ( postData == '' )
+  {
+      var file_content = fs.readFile(base_path + '/base/base.phtml','utf8', function(err, data){
+      if(err){
+        return console.log(err);
+      }
+      block = 'resident_add';
+      var t = Template.render(data, response, block);
+    });
+
+  }
+  else{
+    var postObj = querystring.parse(postData);
+    if( postObj.hasOwnProperty('res_matric') && postObj.hasOwnProperty('res_name')  && postObj.hasOwnProperty('res_gender')  && postObj.hasOwnProperty('res_point') 
+ && postObj.hasOwnProperty('res_email') && postObj.hasOwnProperty('res_pass') ){
+      
+     rbs_res.addUser(postObj.res_matric, postObj.res_pass, postObj.res_gender, postObj.res_email, postObj.res_name, 'None', postObj.res_point, 'None');
+     var file_content = fs.readFile(base_path + '/base/base.phtml','utf8', function(err, data){
+      if(err){
+        return console.log(err);
+      }
+      block = 'resident_adddone';
+      var t = Template.render(data, response, block);
+    });
+
+ 
+    
+    }
+  }  
+ }
+add_resident.prototype.reqCookie = ['rbs_user','rbs_group'];
+/*-------------------------------------
+* View All Resident Handler
+*
+-------------------------------------*/  
+function all_resident(response, postData, cookies, query){
+  if( cookies['rbs_group'] != 'admin' )
+  {
+     response.writeHead('404',{'Content-Type':'text/plain'});
+     response.write('You do not have permission to enter');
+     response.end();
+ }
+
+  var get_var_len = query.len;
+  if ( postData == ''){
+      var file_content = fs.readFile(base_path + '/base/base.phtml','utf8', function(err, data){
+      if(err){
+        return console.log(err);
+      }
+      block = 'resident_all';
+      var t = Template.render(data, response, block);
+    });
+
+  }
+  else{
+  }  
+ }
+all_resident.prototype.reqCookie = ['rbs_user','rbs_group'];
 function upload(response,postData, cookies){ 
   this.reqCookie = ['rbs_user', 'rbs_group'];
 
@@ -126,3 +199,5 @@ function upload(response,postData, cookies){
 exports.start = start;
 exports.upload = upload;
 exports.login = login;
+exports.add_resident = add_resident;
+exports.all_resident = all_resident;

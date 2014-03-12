@@ -4,21 +4,24 @@ var url = require('url');
 function start(handle, route){
   function onRequest(request, response){
     var postData = "";
-    var pathname = url.parse(request.url).pathname;
-    console.log('Request for '+pathname+' has been recieved');
+    var url_parts = url.parse(request.url, true);
+    var pathname = url_parts.pathname;
+    var query = url_parts.query;
+    //console.log('Request for '+pathname+' has been recieved');
     //Apply UTF-8 encoding
     var cookies = parseCookies(request);
-    console.log('Cookies...');
-    console.log(cookies);    
-
+    //console.log('Cookies...');
+    //console.log(cookies);    
+    //console.log('Query...');
+    //console.log(query);
     request.setEncoding('utf8');
     request.addListener('data',function(postDataChunk){
     postData += postDataChunk;
-    console.log('Recieved POST data chunk "'+postDataChunk+'".');
+    //console.log('Recieved POST data chunk "'+postDataChunk+'".');
     });
     request.addListener('end',function(){
     // Pass on the response to the router
-    route(handle, pathname, response,postData,cookies);
+    route(handle, pathname, response,postData,cookies,query);
     });
   }
   function parseCookies(request){

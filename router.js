@@ -1,6 +1,6 @@
 var static_server = require('./static.js');
 
-function route(handle, pathname, response, postData, cookies){
+function route(handle, pathname, response, postData, cookies, query){
   console.log('About to route a request for '+pathname);
   if (typeof handle[pathname] === 'function'){
     //Pass response to handle
@@ -11,7 +11,7 @@ function route(handle, pathname, response, postData, cookies){
     console.log('Required len: ' + req_len);
     if( req_len == 0 ){
       //console.log(' Cookies are not required');
-      handle[pathname](response, postData, cookies);
+      handle[pathname](response, postData, cookies, query);
     }
     else{
       //console.log("Needs Cookies");
@@ -35,7 +35,7 @@ function route(handle, pathname, response, postData, cookies){
       response.end
     }
     else{
-      handle[pathname](response, postData, cookies);
+      handle[pathname](response, postData, cookies, query);
     }
   }
   } else {

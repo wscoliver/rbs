@@ -1,0 +1,184 @@
+<script src='http://188.226.150.164:8881/socket.io/socket.io.js'></script>
+<script>
+//Globals
+var cur_page = 1;
+var max_page = 1;
+
+//End Globals
+  var socket = io.connect('http://188.226.150.164:8881');
+  socket.on ('news', function (data) {
+    //alert(data);
+    //socket.emit('my event', { my : 'data'});
+  });
+  
+var get_resident = function(){
+  //Grab the Resident list from the Redis server via socket.io
+  //Channel name: rbs_res
+var  args = {'cmd': 'getrangehash'
+         ,'set_key': 'rbs_residents'
+         ,'range_start': 14*(cur_page-1)
+         ,'range_end': 14*(cur_page)
+         };
+  //Update max page
+var  args_max = {'cmd' : 'getlistlen', 'set_key' : 'rbs_residents'};
+  socket.emit('rbs_res', args_max, function(data){
+  //Based on list length, set the max page
+  var maxp = Math.ceil(data/15);
+  max_page = maxp;
+  //console.log('Total pages: ' + max_page);
+
+  });
+  socket.emit('rbs_res', args, function(data){
+
+   // var fobj = data['A1234'];
+   // var fname = fobj['user_name'];
+   // console.log(' wee found fname: ' + fname);
+   var i = 0;
+   function fill_row(num, matric, dval){
+     //Create New Node
+     var tr_node = document.createElement('tr');
+     var a = (num+1);
+     var node_val ="<td>"+a+"</td><td>"+matric+"</td><td><input type ='text' id='row_"+a+"_name' /></td>"
+     +"<td><select id='row_"+a+"_gender'>"
+     +"     <option value = 'M'>M</option>"
+     +"     <option value = 'F'>F</option>"
+     +"   </select></td>"
+     +"<td><input type='text' id='row_"+a+"_points' /></td><td></td>"
+     +"<td><span class = 'p_edit_button' onclick='edit(\""+matric+"\",\""+a+"\")'>Edit</span>"
+     +"<span class = 'p_del_button' onclick='del(\""+matric+"\",\""+a+"\")'>Delete</span></td>";
+
+     //Append the Node
+     tr_node.innerHTML = node_val;
+     tr_node.id = 'rbs_res_'+a;
+     document.getElementById('rbs_res').appendChild(tr_node);
+     //Fill with input values
+     var tgt_id = 'rbs_res_'+(num+1);
+  //   console.log('Row: ' + tgt_id);
+     var tgt = document.getElementById(tgt_id);
+ 
+     document.getElementById('row_'+(num+1)+'_name').value = dval['user_name'];
+     document.getElementById('row_'+(num+1)+'_gender').value = dval['user_gender'];
+     document.getElementById('row_'+(num+1)+'_points').value = dval['user_points'];
+     tgt.childNodes[5].innerHTML = dval['user_room'];
+   
+
+   }
+   for ( k in data ){
+     var m_no = k;
+     var dval = data[k];
+     //Take our table row
+     fill_row(i, m_no, dval);
+     i++;
+   }
+    //Add in last bit for pages
+   function page_row(){
+     var page_node = document.createElement('tr');
+     var page_val="<td></td><td></td><td>Showing results for "+(15*(cur_page)-14)+" to "+15*(cur_page)+"</td>";
+     if( cur_page < max_page){
+     //Show next button
+     page_val +="<td><span onclick='nextPage()'>Next</span></td>";
+     }
+     else{
+     page_val +="<td></td>";
+     }
+
+     if( cur_page > 1){
+     page_val +="<td><span onclick='prevPage()'>Prev</span></td>";
+     }
+     else{
+     page_val +="<td></td>";
+     }
+
+     page_node.innerHTML = page_val;
+     document.getElementById('rbs_res').appendChild(page_node);  
+   }
+   page_row();
+  });
+}
+window.onload = get_resident;
+/*----------------------
+*
+*Edit Function
+----------------------*/ 
+function edit(key, row){
+//Get the changed variables
+var gender_val = document.getElementById('row_'+row+'_gender').value;
+var name_val = document.getElementById('row_'+row+'_name').value;
+var points_val = document.getElementById('row_'+row+'_points').value;
+
+var args = {'cmd' : 'setmhash',
+            'key' : key,
+            'val' : {'user_name' : name_val, 'user_gender' : gender_val, 'user_points' : points_val }};
+//console.log(JSON.stringify(args));
+ socket.emit('rbs_res', args, function(data){
+  // console.log('Reply: ' + data); 
+ });
+}
+
+/*----------------------
+*
+*Del Function
+----------------------*/ 
+function del(key, row){
+//Get the changed variables
+
+var args = {'cmd' : 'delhash',
+            'key' : key};
+//console.log(JSON.stringify(args));
+ socket.emit('rbs_res', args, function(data){
+ //  console.log('Reply: ' + data);
+    clearRes(); 
+   
+   get_resident();
+ });
+}
+function clearRes(){
+   var tb = document.getElementById('rbs_res');
+ while( tb.lastChild && tb.lastChild.id != 'rbs_head'){
+     tb.removeChild(tb.lastChild);
+   }
+
+}
+/*----------------------
+*
+*nextPage and prevPage Function
+----------------------*/ 
+function nextPage(){
+clearRes();
+//Get the changed variables
+cur_page++;
+get_resident();
+}
+function prevPage(){
+clearRes();
+//Get the changed variables
+cur_page--;
+get_resident();
+}
+</script>
+
+
+<h4>List of RH Residents </h4>
+
+<table id='rbs_res' >
+  <tr id='rbs_head'><th>Id</th><th>Matric No</th><th>Name</th><th>Gender</th><th>Points</th><th>Room</th><th>Options</th></tr>
+  <!--<tr id='rbs_res_1'><td></td><td></td><td><input type ='text' id='row_1_name' /></td>
+    <td><select id='row_1_gender'>
+          <option value = 'M'>M</option>
+          <option value = 'F'>F</option>
+        </select></td>
+    <td><input type='text' id='row_1_points' /></td><td></td><td></td></tr> -->
+ 
+
+
+
+
+</table>
+
+
+
+
+
+
+
+
