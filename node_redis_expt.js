@@ -35,7 +35,7 @@ function rbsRedis(hash_list){
      rbs_root.user_name = 'Oliver Wee';
      rbs_root.user_pass = '12345';
      rbs_root.user_gender = 'M';
-     rbs_root.user_email = 'something@gmail.com';
+     rbs_root.user_email = 'wscoliver@gmail.com';
      rbs_root.user_group = 'admin';
      rbs_root.user_points = 100;
      rbs_root.user_room = ' ';
@@ -53,7 +53,7 @@ function rbsRedis(hash_list){
   hash_list.forEach(chckHsh);
 }
 //Try the auth module
-  var rb = new rb_res();
+/*  var rb = new rb_res();
   rb.user_matric = 'A0094622E';
   rb.field_chg = 'user_pass';
   rb.var_new = md5('12345raffleshallrox');
@@ -64,7 +64,7 @@ function rbsRedis(hash_list){
   if( resp ){
     console.log('Password is correct');
   }
-
+*/
     console.log('Verifying setup...');
     disCntrl = new rbsRedis(hash_list);
 //    disCntrl = bind(disCntrl.setupHsh, disCntrl);

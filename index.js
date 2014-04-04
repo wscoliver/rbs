@@ -9,6 +9,8 @@ handle['/upload'] = requestHandlers.upload;
 handle['/login'] = requestHandlers.login;
 handle['/add_resident'] = requestHandlers.add_resident;
 handle['/resident'] = requestHandlers.all_resident;
-
+handle['/logout'] = requestHandlers.logout;
+handle['/blockadmin'] = requestHandlers.blockadmin;
+handle['/party'] = requestHandlers.party;
 server.start(handle, router.route);
 

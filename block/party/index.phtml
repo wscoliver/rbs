@@ -1,0 +1,277 @@
+<script src='http://137.132.73.188:8881/socket.io/socket.io.js'></script>
+<script>
+/*-----------------------------
+*Global Variables
+*----------------------------*/
+var socket = io.connect('http://137.132.73.188:8881');
+
+var user_matric = ''
+   ,user_points
+   ,user_gender
+   ,user_name
+   ,user_mode
+   ,user_party = 'none'
+   ,player1
+   ,player2
+   ,party_role;
+/*------------------------------
+*Connect to the server and 
+*retrieve user details
+*-----------------------------*/
+function getUser(){
+  var raw = document.cookie;
+  console.log(raw); 
+  var cookie_list = raw.split(';');
+  for( i=0; i< cookie_list.length; i++){
+    var cookie_raw = cookie_list[i];
+	fCookie(cookie_raw);
+  }
+}
+//Filter for the user cookie
+function fCookie(raw){
+  var raw_list = raw.split('=');
+  var raw_key = raw_list[0];
+  var raw_val = raw_list[1];
+  if( raw_key == ' rbs_user'){
+    retUser(raw_val);
+  }
+}
+//Retrieve the user details
+function retUser(raw_val){
+  var args = {
+    'cmd' : 'getplothash'
+   ,'key' : raw_val
+   };
+  user_matric = raw_val;
+  socket.emit('rbs_blockadmin', args, userCallback);
+}
+//Callback function to work with user Data
+var userCallback = function(data){
+  user_points = data['user_points'];
+  user_name = data['user_name'];
+  user_gender = data['user_gender'];
+
+  //Get party
+  getParty();
+ 
+};
+function fUsertable(){
+  document.getElementById('user_matric').innerHTML = user_matric;
+  document.getElementById('user_name').innerHTML = user_name;
+  document.getElementById('user_gender').innerHTML = user_gender;
+  document.getElementById('user_points').innerHTML = user_points;
+  document.getElementById('user_party').innerHTML = user_party;
+}
+
+//Start the Ball Rolling
+getUser();
+
+/*-----------------------
+Party Functions
+----------------------*/
+//Get the Party Details
+function getParty(){
+  var args = {
+    'cmd' : 'party_status'
+   ,'p_key' : user_matric
+  }
+  console.log('Getting party status');
+  socket.emit('rbs_blockadmin', args, function(data){
+    if(data){
+      console.log('In party');
+	  console.log(data);
+	  data_list = data.split(',');
+
+	  user_party = data_list[0];
+	  player1 = data_list[0];
+	  player2 = data_list[1];
+	  
+	  console.log('User party: '+user_party);
+	  if( user_matric == user_party){
+        document.getElementById('party_role').innerHTML = 'Party Leader';
+		party_role = 'PL';
+	  }
+	  else{
+        document.getElementById('party_role').innerHTML = 'Party Member';
+		party_role = 'PM';
+		
+	  }
+	  document.getElementById('py1').innerHTML = player1;
+	  document.getElementById('py2').innerHTML = player2;
+	  optionParty();
+
+	  showCreate(0);
+
+	  fUsertable();
+
+	  pointsParty();
+
+	}
+	else{
+	  party_role = 'NA';
+      document.getElementById('py1').innerHTML = 'NA';
+	  document.getElementById('py2').innerHTML = 'NA';
+
+      console.log('Not in a party');
+	  fUsertable();
+	  document.getElementById('party_role').innerHTML = '';
+	  optionParty();
+	  listParty();
+	  
+	}
+  });
+  
+}
+//Creates a Party
+function createParty(){
+ //Create a party hash
+ var args = {
+   'cmd':'party_create'
+  ,'player1': user_matric
+ };
+
+ socket.emit('rbs_blockadmin', args, function(data){
+   if(data){
+     console.log(data);
+     refresh();
+   }
+ });
+
+}
+//Show the Party Options
+function optionParty(){
+  if(party_role == 'PL'){
+    //Option to disband
+	var src='<span class="p_create_button" onclick="disbandPt()">Disband</span';
+	document.getElementById('party_options').innerHTML = src;
+  }
+  if(party_role == 'PM'){
+    //Option to leave
+	var src='<span class="p_create_button" onclick="leavePt()">Leave</span';
+	document.getElementById('party_options').innerHTML = src;
+
+  }
+  if(party_role == 'NA'){
+    document.getElementById('party_options').innerHTML = ' ';
+  }
+}
+//Disband the Party
+function disbandPt(){
+var args = {
+  'cmd':'party_disband'
+ ,'player1': user_matric
+
+  };
+
+  socket.emit('rbs_blockadmin', args, function(data){
+       if(data){
+          user_party = 'none';
+	      refresh();
+
+	   }
+      });
+ document.getElementById('party_points').innerHTML = 'NA'; 
+}
+//Leave the party
+function leavePt(){
+var args = {
+  'cmd':'party_leave'
+ ,'player1': user_party
+ ,'player2': user_matric
+
+  };
+
+  socket.emit('rbs_blockadmin', args, function(data){
+       if(data){
+          user_party = 'none';
+	      refresh();
+	   }
+      });
+  document.getElementById('party_points').innerHTML = 'NA'; 
+
+}
+//Get the points of the party
+function pointsParty(){
+var args= {
+    'cmd':'party_points'
+   ,'player1':user_party
+  };
+socket.emit('rbs_blockadmin', args, function(data){
+  document.getElementById('party_points').innerHTML = data;
+});
+
+}
+//Refresh the User Parameters
+function refresh(){
+  getParty();
+}
+//Toggle the Create Party Box
+function showCreate(x){
+  if(x){
+    document.getElementById('create_party').style.display = 'block';
+	document.getElementById('list_party').style.display = 'block';
+  }else{
+    document.getElementById('create_party').style.display = 'none';
+	document.getElementById('list_party').style.display = 'none';
+  }
+}
+//Load the Party Table
+function listParty(){
+console.log('Finding vacant parties...');
+  var args = {
+    'cmd': 'party_list'
+  };
+  socket.emit('rbs_blockadmin', args, function(data){
+    createList(data);
+  });
+}
+//Create a list of parties that the player can join
+function createList(data){
+  document.getElementById('list_party').innerHTML = ' ';
+  //Create the Initital Headers
+  createTH();
+  for(i=0;i<data.length;i++){
+  var tr_node = document.createElement('tr');
+  var tr_src = '<td>'+data[i]['id']+'</td><td>'+data[i]['name']+'</td><td><span class="p_create_button" onclick="join(\''+data[i]['id']+'\')" >Join</span></td>';
+  tr_node.innerHTML = tr_src;
+  document.getElementById('list_party').appendChild(tr_node);
+  }
+  showCreate(1);
+}
+function createTH(){
+  var tr_node = document.createElement('tr');
+  var tr_src = '<tr><th>PID</th><th>Party Leader</th><th>Options</th></tr>';
+  tr_node.innerHTML = tr_src;
+  document.getElementById('list_party').appendChild(tr_node);
+}
+function join(party_id){
+var args = {
+   'cmd':'party_join'
+  ,'pid': party_id
+  ,'p2': user_matric
+ };
+ socket.emit('rbs_blockadmin', args, function(data){
+  
+   refresh();
+ });
+
+}
+</script>
+<h4> Party Page </h4>
+<table>
+  <tr><td>Matric</td><td id='user_matric'></td></tr>
+  <tr><td>Name</td><td id='user_name'></td></tr>
+  <tr><td>Gender</td><td id='user_gender'></td></tr>
+  <tr><td>Points</td><td id='user_points'></td></tr>
+  <tr><td>Party</td><td id='user_party'></td><td>Role</td><td id='party_role'></td></tr>
+  <tr><td>Party Members</td><td id='py1' ></td><td id='py2'></td></tr>
+  <tr><td>Party Points</td><td id='party_points'></td></tr>
+  <tr><td>Party Options</td><td id='party_options'></td></tr>`
+</table>
+<h4>Create New Party</h4>
+<table id='create_party'>
+  <tr><td><span class='p_create_button' onclick='createParty()'>Create</span></td></tr>
+</table>
+<h4>Available Parties</h4>
+<table id='list_party'>
+</table>

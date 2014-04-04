@@ -1,6 +1,6 @@
 body { 
   /*--- Background Color ---*/
-  background-color: #212121;
+  background-color: #12121C;
   height: 100%;
   margin: 0 0 0 0;
 }
@@ -34,7 +34,7 @@ h3{
   float: center;
   margin: 0 0 0 0;
   font-size: 8.7em;
-  color: #139608;
+  color: #1FAF8B;
   font-weight: bold;
   text-shadow: 0 2px 3px #111;
 
@@ -44,26 +44,33 @@ h3{
 width: 100%; height: 100%; position: absolute;
 }
 #rbs-sidebar {
-width: 20%; height: 100%;float: left;
+width: 15%; height: 100%;float: left;
 }
 #rbs-main {
-width: 80%; height: 100%;float: left;background-color: #FFF;
+width: 85%; float: left;background-color: #F3F4F8;
+}
+#rbs-main h4{
+font-weight: normal;
+font-family: Verdana ;
+font-size: 1.2em;
+color: #0B121A;
+padding-left: 0.6em;
 }
 .rbs-sidebar-ul li{
   list-style-type: none;
-  padding: 0 0 0 10%;
+  padding: 0 0 0 1%;
   margin: 0;
-  color: #139608;
-  font-size: 1.4em;
-
+  color: #DDE6EF;
+  font-size: 1.2em;
+  font-family: Trebuchet MS;
 }
 .rbs-sidebar-ul a{
-  background-color: white;
-  width: 9em;
+  
+  width: 100%;
   padding: 3px 12px 3px 8px;
   text-decoration: none;
   display: block;
-  color: #212121;
+  color: #DDE6EF;
 }
 .rbs-sidebar-ul a:hover{
   background-color: #212121;
@@ -71,7 +78,7 @@ width: 80%; height: 100%;float: left;background-color: #FFF;
 }
 .rbs-sidebar-ul li li{
   font-size: 0.9em;
-  padding-left: 7%;
+  padding-left: 5%;
 }
 .rbs-sidebar-ul ul{
   list-style-type: none;
@@ -80,15 +87,232 @@ width: 80%; height: 100%;float: left;background-color: #FFF;
   color: #139608;
 }
 .rbs-sidebar-ul li a{
-  background-color: white;
-  width: 9em;
+  
+  width: 100%;
   padding: 3px 12px 3px 8px;
   text-decoration: none;
   display: block;
-  color: #212121;
+  color: #DDE6EF;
 }
 .rbs-sidebar-ul li a:hover{
-  background-color: #212121;
-  color: white;
+  background-color: #19AF89;
+  color: #DDE6EF;
 }
-.
+/*---------------------------
+RBS Resident Management Table
+---------------------------*/
+#rbs_res {
+margin-left: 0.6em;
+border-collapse: collapse;
+}
+#rbs_res th{
+background-color: #FFF;
+color: #21A78C;
+font-weight: normal;
+font-family: Verdana;
+border: solid 1px #DEE7F0;
+margin: 0;
+padding: 1em 1em 1em 1em;
+}
+#rbs_res tr:nth-child(even){background: #FFF;}
+#rbs_res tr:nth-child(odd){background: #F3F4F6;}
+#rbs_res td{
+font-family: Verdana;
+font-weight: normal;
+font-size: 0.9em;
+text-align: center;
+}
+#rbs_res span{
+width: 2em;
+background-color: #19AB86;
+color: #F3F4F8;
+padding: 0.2em 0.4em 0.2em 0.4em;
+margin: 0.1em 0.1em 0.1em 0.2em;
+border-radius: 10%;
+font-size: 0.8em;
+
+}
+.rbs_res_points {
+width: 2em;
+}
+#rbs_login{
+
+}
+#rbs_login td{
+color: #19AB86;
+font-family: Verdana;
+font-weight: normal;
+}
+/*---------------------------
+RBS Block Management Table
+---------------------------*/
+
+#rbs_rblock{
+margin-left: 0.6em;
+border-collapse: collapse;
+float: left;
+table-layout: fixed;
+width: 20em;
+height: 20em;
+}
+#rbs_rblock td{
+border: solid 0.1em #12121C;
+width: 5em;
+height: 4.1em;
+font-size: 0.7em;
+padding: 0;
+}
+.td_empty{
+background-color: #12121C;
+color: #12121C;
+/*visibility: hidden;*/
+border: solid 0.1em #F3F4F8 !important;
+}
+.td_occp{
+background-color: #F3F4F8;
+color: #12121C;
+visibility: block;
+}
+.blk_room{
+font-size: 1.5em;
+text-align: center;
+padding: 0;
+margin: 0;
+}
+#rbs_rblock td p {
+margin: 0.2em 0.0em 0.2em 0;
+}
+#rbs_rblock_edit {
+  
+}
+#rbs_rblock_edit span{
+width: 2em;
+background-color: #19AB86;
+color: #F3F4F8;
+padding: 0.2em 0.4em 0.2em 0.4em;
+margin: 0.1em 0.1em 0.1em 0.2em;
+border-radius: 10%;
+font-size: 0.8em;
+
+}
+#rbs_rblock_select{
+
+}
+#rbs_rblock_select span{
+width: 2em;
+background-color: #19AB86;
+color: #F3F4F8;
+padding: 0.2em 0.4em 0.2em 0.4em;
+margin: 0.1em 0.1em 0.1em 0.2em;
+border-radius: 10%;
+font-size: 0.8em;
+
+}
+/*----------------------------
+Block Buttons
+----------------------------*/
+.but_hold{
+width: 4.8em;
+height: 2em;
+margin-right: auto;
+margin-left: auto;
+}
+.but_hold span{
+width: 1.6em;
+height: 1.2em;
+background-color: #12121C;
+color : #F3F4F8;
+text-align: center;
+float: left;
+margin-left: 0.1em;
+font-size: 1em;
+padding: 0.14em 0.08em 0.08em 0.08em;
+border-radius: 10%;
+}
+.but_hold div{
+width: 1.6em;
+height: 1.6em;
+border-radius: 20%;
+font-size: 0.8em;
+text-align: center;
+padding-top: 0.2em;
+float: left;
+margin-left: 0.3em;
+color: #F3F4F8;
+}
+.span_bid{
+background-color: #19AB86 !important;
+font-size: 1em !important;
+border-radius: 10%;
+padding-top: 0.2em;
+margin-left: 0.3em !important;
+width: 1.5em !important;
+height: 1.3em !important;
+float: right !important;
+}
+.div_rg_m{
+background-color: blue;
+}
+.div_rg_f{
+background-color: #DE4BCA;
+}
+.div_rt{
+background-color: orange;
+}
+.div_rt_u{
+background-color: orange;
+font-size: 1em !important;
+}
+.div_rs{
+background-color: red;
+
+}
+.but_leg{
+}
+.but_leg div{
+width: 1.6em;
+height: 1.6em;
+border-radius: 20%;
+font-size: 0.8em;
+text-align: center;
+padding-top: 0.2em;
+float: left;
+margin-left: 0.3em;
+color: #F3F4F8;
+}
+/*-------------------------------
+Bidding for Users
+-------------------------------*/
+#rbs_rblock_user{
+margin-left: 0.6em;
+border-collapse: collapse;
+float: left;
+table-layout: fixed;
+width: 20em;
+height: 20em;
+}
+#rbs_rblock_user td{
+border: solid 0.1em #12121C;
+width: 5em;
+height: 4.1em;
+font-size: 0.8em;
+padding: 0;
+}
+#rbs_rblock_user td p {
+margin: 0.2em 0.0em 0.2em 0;
+font-size: 1.0em;
+text-align: center;
+}
+/*--------------------------------
+Party Management
+--------------------------------*/
+.p_create_button{
+width: 2em;
+background-color: #19AB86;
+color: #F3F4F8;
+padding: 0.2em 0.4em 0.2em 0.4em;
+margin: 0.1em 0.1em 0.1em 0.2em;
+border-radius: 10%;
+font-size: 0.8em;
+
+}

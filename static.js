@@ -1,7 +1,7 @@
 //Include the files
 var fs = require('fs');
 var path = require('path');
-var static_path ='/home/nodeuser/nodeProjects/';
+var static_path ='/home/rhcommotion/rbs_node/rbs';
 
 function serve_static( pathname , response ){
   var arr = [],
@@ -11,6 +11,7 @@ function serve_static( pathname , response ){
 
   if ( pathname.search(re) != -1){
     var dir_path = path.join(static_path, pathname);
+	console.log('Dir path: ' + dir_path);
     //Check if this path exists
     fs.exists(dir_path, function(exists){
       if( !exists ){

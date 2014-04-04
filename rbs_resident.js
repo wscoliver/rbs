@@ -33,7 +33,8 @@ function rbs_addUser(user_matric, user_pass, user_gender, user_email, user_name,
     "user_name" : user_name,
     "user_group" : user_group,
     "user_points" : user_points,
-    "user_room" : user_room}, redis.print);
+    "user_room" : user_room,
+	"user_room_key": 0}, redis.print);
   //console.log('Added user: ' + this.user_matric);
   //Update the list of residents
   var args = user_matric;
@@ -43,7 +44,7 @@ function rbs_addUser(user_matric, user_pass, user_gender, user_email, user_name,
 function rbs_authfail(response){
   response.writeHead(302, {
          'Content-Type': 'text/plain',
-         'Location' : '/login'});
+         'Location' : './login'});
   response.write('Login failed');
   response.end();
 
@@ -68,7 +69,7 @@ var auth_pass = client.hgetall(user_matric, function(err, reply){
           ['Content-Type' , 'text/html'],
           ['Set-Cookie','rbs_group='+h_group+';expires=' + exdate.toUTCString],
           ['Set-Cookie','rbs_user='+user_matric+';expires=' + exdate.toUTCString()+';'],
-          ['Location','/'],
+          ['Location','./'],
 ]);
         response.write('You are logged in');
         response.end();

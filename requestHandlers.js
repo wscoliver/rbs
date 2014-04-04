@@ -6,7 +6,7 @@ var exec = require('child_process').exec,
     rbs_res = require('./rbs_resident.js');
 
 //Specify BASE PATH
-var base_path = '/home/nodeuser/nodeProjects/block/';
+var base_path = '/home/rhcommotion/rbs_node/rbs/block/';
 
 //Include the processing of text variable in postData
 var querystring =  require('querystring');
@@ -51,18 +51,22 @@ if( cookies['rbs_group'] == 'admin' )
       }
       block = 'admin';
       var t = Template.render(data, response, block);
-/*      response.writeHead(200,{
-        'Content-Type' : 'text/html'});
-      response.write(t);
-      response.end();*/
     });
 
 }
 else
 {
+  //Use User View, Bidding System and Party System
+   var file_content = fs.readFile(base_path + '/base/index.phtml','utf8', function(err, data){
+      if(err){
+        return console.log(err);
+      }
+      block = 'rblock_user';
+      var t = Template.render(data, response, block);
+        
+    });
 
 }
-
 }
 start.prototype.reqCookie = ['rbs_user','rbs_group'];
 /*-------------------------------------
@@ -117,6 +121,24 @@ function login(response, postData, cookies, query){
 }
 login.prototype.reqCookie = [];
 /*-------------------------------------
+* Logout Handler
+*
+-------------------------------------*/  
+function logout(response, postData, cookies, query){
+  //Logout the user
+  var exdate = new Date();
+  exdate.setDate(exdate.getDate() - 1);
+  response.writeHead(302, [
+    ['Set-Cookie','rbs_group='+cookies['rbs_group']+';expires=' + exdate.toUTCString],
+	['Set-Cookie','rbs_user='+cookies['rbs_user']+';expires=' + exdate.toUTCString],
+	['Location','./login'],
+  ]);
+    response.write('You are logged out!');
+	response.end();
+}
+logout.prototype.reqCookie = ['rbs_user','rbs_group'];
+
+/*-------------------------------------
 * Add Resident Handler
 *
 -------------------------------------*/  
@@ -145,7 +167,7 @@ function add_resident(response, postData, cookies, query){
     if( postObj.hasOwnProperty('res_matric') && postObj.hasOwnProperty('res_name')  && postObj.hasOwnProperty('res_gender')  && postObj.hasOwnProperty('res_point') 
  && postObj.hasOwnProperty('res_email') && postObj.hasOwnProperty('res_pass') ){
       
-     rbs_res.addUser(postObj.res_matric, postObj.res_pass, postObj.res_gender, postObj.res_email, postObj.res_name, 'None', postObj.res_point, 'None');
+     rbs_res.addUser(postObj.res_matric, postObj.res_pass, postObj.res_gender, postObj.res_email, postObj.res_name, postObj.res_group, postObj.res_point, 'None');
      var file_content = fs.readFile(base_path + '/base/base.phtml','utf8', function(err, data){
       if(err){
         return console.log(err);
@@ -195,9 +217,58 @@ function upload(response,postData, cookies){
   response.write('You have sent : '+querystring.parse(postData).text);
   response.end();
 }
+/*-------------------------------------
+* Blockadmin Handler
+*
+-------------------------------------*/  
+function blockadmin(response, postData, cookies, query){
+  if( cookies['rbs_group'] != 'admin' )
+  {
+     response.writeHead('404',{'Content-Type':'text/plain'});
+     response.write('You do not have permission to enter');
+     response.end();
+ }
+
+
+     var file_content = fs.readFile(base_path + '/base/base.phtml','utf8', function(err, data){
+      if(err){
+        return console.log(err);
+      }
+      block = 'rblock_admin';
+      var t = Template.render(data, response, block);
+    });
+
+}
+blockadmin.prototype.reqCookie = ['rbs_user','rbs_group'];
+/*---------------------------
+Party Handler
+---------------------------*/
+function party(response, postData, cookies, query){
+  if( cookies['rbs_group'] != 'user' )
+  {
+     response.writeHead('404',{'Content-Type':'text/plain'});
+     response.write('You do not have permission to enter');
+     response.end();
+ }
+
+
+     var file_content = fs.readFile(base_path + '/base/index.phtml','utf8', function(err, data){
+      if(err){
+        return console.log(err);
+      }
+      block = 'party_index';
+      var t = Template.render(data, response, block);
+    });
+
+}
+party.prototype.reqCookie = ['rbs_user','rbs_group'];
+
 
 exports.start = start;
 exports.upload = upload;
 exports.login = login;
 exports.add_resident = add_resident;
 exports.all_resident = all_resident;
+exports.logout = logout;
+exports.blockadmin = blockadmin;
+exports.party = party;

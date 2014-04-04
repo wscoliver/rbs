@@ -29,7 +29,7 @@ function route(handle, pathname, response, postData, cookies, query){
       console.log('Access denied...');
       response.writeHead(302 ,{
         'Content-Type':'text/plain',
-        'Location': '/login', 
+        'Location': './login', 
       });
       response.write('Access denied...');
       response.end
