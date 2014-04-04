@@ -1,11 +1,11 @@
-<script src='http://188.226.150.164:8881/socket.io/socket.io.js'></script>
+<script src='http://137.132.73.188:8881/socket.io/socket.io.js'></script>
 <script>
 //Globals
 var cur_page = 1;
 var max_page = 1;
 
 //End Globals
-  var socket = io.connect('http://188.226.150.164:8881');
+  var socket = io.connect('http://137.132.73.188:8881');
   socket.on ('news', function (data) {
     //alert(data);
     //socket.emit('my event', { my : 'data'});
@@ -35,15 +35,26 @@ var  args_max = {'cmd' : 'getlistlen', 'set_key' : 'rbs_residents'};
    // console.log(' wee found fname: ' + fname);
    var i = 0;
    function fill_row(num, matric, dval){
+     
      //Create New Node
      var tr_node = document.createElement('tr');
      var a = (num+1);
-     var node_val ="<td>"+a+"</td><td>"+matric+"</td><td><input type ='text' id='row_"+a+"_name' /></td>"
+	 if( a == 1 )
+	 {
+     var th_node = document.createElement('tr');
+     var th_val = "<th>Id</th><th>Matric No</th><th>Name</th><th>Gender</th><th>Points</th><th>Room</th><th>Nationality</th><th>Options</th>";
+	 th_node.id='rbs_res_th';
+     th_node.innerHTML = th_val;
+	 document.getElementById('rbs_res').appendChild(th_node);
+
+	 }
+     var node_val ="<td>"+((cur_page)*15-15+a)+"</td><td>"+matric+"</td><td><input type ='text' id='row_"+a+"_name' /></td>"
      +"<td><select id='row_"+a+"_gender'>"
      +"     <option value = 'M'>M</option>"
      +"     <option value = 'F'>F</option>"
      +"   </select></td>"
-     +"<td><input type='text' id='row_"+a+"_points' /></td><td></td>"
+     +"<td><input  class='rbs_res_points' type='text' id='row_"+a+"_points' /></td><td></td>"
+	 +"<td id='row_"+a+"_nation' ></td>"
      +"<td><span class = 'p_edit_button' onclick='edit(\""+matric+"\",\""+a+"\")'>Edit</span>"
      +"<span class = 'p_del_button' onclick='del(\""+matric+"\",\""+a+"\")'>Delete</span></td>";
 
@@ -55,7 +66,7 @@ var  args_max = {'cmd' : 'getlistlen', 'set_key' : 'rbs_residents'};
      var tgt_id = 'rbs_res_'+(num+1);
   //   console.log('Row: ' + tgt_id);
      var tgt = document.getElementById(tgt_id);
- 
+     document.getElementById('row_'+(num+1)+'_nation').value = dval['user_nationality'];
      document.getElementById('row_'+(num+1)+'_name').value = dval['user_name'];
      document.getElementById('row_'+(num+1)+'_gender').value = dval['user_gender'];
      document.getElementById('row_'+(num+1)+'_points').value = dval['user_points'];
@@ -76,17 +87,17 @@ var  args_max = {'cmd' : 'getlistlen', 'set_key' : 'rbs_residents'};
      var page_val="<td></td><td></td><td>Showing results for "+(15*(cur_page)-14)+" to "+15*(cur_page)+"</td>";
      if( cur_page < max_page){
      //Show next button
-     page_val +="<td><span onclick='nextPage()'>Next</span></td>";
+     page_val +="<td><span onclick='nextPage()'>Next</span></td><td></td>";
      }
      else{
      page_val +="<td></td>";
      }
 
      if( cur_page > 1){
-     page_val +="<td><span onclick='prevPage()'>Prev</span></td>";
+     page_val +="<td><span onclick='prevPage()'>Prev</span></td><td></td><td></td>";
      }
      else{
-     page_val +="<td></td>";
+     page_val +="<td></td><td></td><td></td>";
      }
 
      page_node.innerHTML = page_val;
@@ -134,8 +145,13 @@ var args = {'cmd' : 'delhash',
 }
 function clearRes(){
    var tb = document.getElementById('rbs_res');
- while( tb.lastChild && tb.lastChild.id != 'rbs_head'){
-     tb.removeChild(tb.lastChild);
+ while( tb.lastChild){
+      var ch_id = tb.lastChild.id;
+	  if( ch_id != ' '){
+
+        console.log('Removing...'+ch_id);
+        tb.removeChild(tb.lastChild);
+	  }
    }
 
 }
@@ -161,19 +177,7 @@ get_resident();
 <h4>List of RH Residents </h4>
 
 <table id='rbs_res' >
-  <tr id='rbs_head'><th>Id</th><th>Matric No</th><th>Name</th><th>Gender</th><th>Points</th><th>Room</th><th>Options</th></tr>
-  <!--<tr id='rbs_res_1'><td></td><td></td><td><input type ='text' id='row_1_name' /></td>
-    <td><select id='row_1_gender'>
-          <option value = 'M'>M</option>
-          <option value = 'F'>F</option>
-        </select></td>
-    <td><input type='text' id='row_1_points' /></td><td></td><td></td></tr> -->
- 
-
-
-
-
-</table>
+  </table>
 
 
 

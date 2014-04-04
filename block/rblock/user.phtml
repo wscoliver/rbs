@@ -1,0 +1,421 @@
+<script src='http://137.132.73.188:8881/socket.io/socket.io.js'></script>
+<script>
+//Globals
+var cur_block = 2;
+var max_block = 6;
+var blk_data;
+var user_matric = '';
+var user_points,
+    user_gender,
+	user_room,
+	user_name;
+var user_mode = 'Single';
+var party_points = 0;
+//End Globals
+  var socket = io.connect('http://137.132.73.188:8881');
+  socket.on ('news', function (data) {
+    //alert(data);
+    //socket.emit('my event', { my : 'data'});
+  });
+  
+var get_user = function(){
+var raw = document.cookie;
+//console.log(raw);
+var cookie_list = raw.split(';');
+  for(i=0;i<cookie_list.length;i++){
+    var cookiewval = cookie_list[i];
+	//console.log(cookiewval);
+	var val_raw = cookiewval.split('=');
+	//console.log('Cookie key: '+val_raw[0]);
+	if(val_raw[0] == ' rbs_user'){
+      //alert('User is: '+val_raw[1]);
+	  user_matric = val_raw[1];
+	  //Get the user details
+	  //
+	  var args = {
+        'cmd':'getplothash',
+		'key': user_matric,
+	  };
+	  socket.emit('rbs_blockadmin', args, function(data){
+        user_points = data['user_points'];
+		user_name = data['user_name'];
+		user_gender = data['user_gender'];
+		user_room = data['user_room'];
+		if(user_room == 'None'){
+          //Block the leave button
+		  leavebut(0);
+		}
+        getParty();
+		document.getElementById('res_name').innerHTML = user_name;
+		document.getElementById('res_points').innerHTML = user_points;
+		document.getElementById('res_room').innerHTML = user_room;
+       // console.log('Points: '+user_points);
+	  });
+
+	}
+
+  }
+
+
+
+}
+function leavebut(i){
+  if( i === 0 ){
+    document.getElementById('span_leave').style.display = 'none';
+  }else{
+    document.getElementById('span_leave').style.display = 'block';
+  }
+}
+function get_block(){
+console.log('Getting block data...');
+var  args = {'cmd': 'getblockhashes'
+         ,'block':cur_block
+
+         };
+  //Get the user's data
+  //
+  socket.emit('rbs_blockadmin', args, function(data){
+  //Build the table row
+    function buildHead(){
+    var tr_node = document.createElement('tr');
+	var tr_val = '';
+	  for (var i=-1;i<11;i++){
+       if(i!=-1){
+         tr_val+='<td>'+i+'</td>';
+	   }else{
+         tr_val+='<td>X/Y</td>';
+	   }
+	  }
+	tr_node.innerHTML = tr_val;
+	tr_node.id = 'block_y_head';
+	//document.getElementById('rbs_rblock').appendChild(tr_node);
+	}
+    function buildRow(x,data){
+	if( x == 0 ){
+      //Build headers
+	  buildHead();
+	}
+      var tr_node = document.createElement('tr');
+	  var tr_val = '';
+	  for(var y=0;y<11;y++){
+        plot_val = buildPlot(x,y,data);
+		tr_val+=plot_val;
+      
+	  }
+      tr_node.innerHTML = tr_val;
+	  tr_node.id = 'block_x_1';
+	  document.getElementById('rbs_rblock_user').appendChild(tr_node);
+	}
+  //Build the table plot
+  function buildPlot(x,y,data){
+  //Get the hash values
+  var hash_key = 'block'+cur_block+'_x'+x+'_y'+y;
+  var hash_data = data[hash_key];
+  return buildBox(hash_data, x, y);
+
+  }
+  //Build the table box
+  function buildBox(data, x, y){
+  var rt = get_type(data['room_type']),
+      rg = data['room_gender'],
+	  rp = data['room_points'],
+	  rs = get_status(data['room_status']);
+  var src = '';
+  var box_id = 'block'+cur_block+'_x'+x+'_y'+y;
+  var td_class= '';
+  var gender_class= '';
+  var type_class='';
+  var stat_class='';
+  if( data['room_num'] == 'Not set'){
+  //empty plot
+    td_class='td_empty';
+	src ='<td class="'+td_class+'"></td>';
+  }
+  else{
+    td_class='td_occp';
+	//Filter the rooms
+	src = room_filter(data, td_class,x,y);
+   }
+  
+   
+    return src;
+  }
+  function room_filter(data, td_class,x,y){
+  var src= '';
+  //Get the gender
+  if(data['room_status'] == 'Reserved'){
+    return getNA(data);
+  }
+    if(data['room_gender'] == user_gender){
+    // Show the Room
+      if( user_mode == 'Single'){
+      // Only allow Single or Deluxe rooms
+	    if( data['room_type'] == 'Single' || data['room_type'] == 'Deluxe')
+		{
+          //Check for points
+		  if( parseInt(user_points) > parseInt(data['room_points']) ){
+            //Show the Room
+			//Block key
+			var bkey = 'block'+cur_block+'_x'+x+'_y'+y;
+
+             src = '<td class="td_occp" title="'+data['room_occpname']+'" onclick="showName(this)"><p>'+data['room_num']+'('+get_type(data['room_type'])+')</p>'
+			 +'<div class="but_hold"><span>'+data['room_points']+'</span>'
+			 +'<span class="span_bid" onclick="rbid(\''+bkey+'\')">Bid</span></div></td>';
+			 return src;
+		  }
+		  else{
+            return getNA(data);
+
+		  }
+		}
+		else{
+        return getNA(data);
+		}
+
+	  }
+	  if(user_mode == 'Double'){
+        // Only allow Double Rooms
+	    if( data['room_type'] == 'Double')
+		{
+          //Check for points
+		  //console.log('pp: '+party_points+' rp: '+data['room_points']+' rnum: '+data['room_num']);
+		  var rp = data['room_points'];
+		  if( parseInt(party_points) > parseInt(rp) )
+		  {
+            //Show the Room
+			//Block key
+			var bkey = 'block'+cur_block+'_x'+x+'_y'+y;
+
+             src = '<td class="td_occp" title="'+data['room_occpname']+'" onclick="showName(this)"><p>'+data['room_num']+'('+get_type(data['room_type'])+')</p>'
+			 +'<div class="but_hold"><span>'+data['room_points']+'</span>'
+			 +'<span class="span_bid" onclick="rbid(\''+bkey+'\')">Bid</span></div></td>';
+			 return src;
+		  }
+		  else{
+            return getNA(data);
+
+		  }
+		}
+		else{
+        return getNA(data);
+		}
+
+
+
+	  }
+	  if(user_mode == 'DoubleR'){
+        return getNA(data);
+	  }
+	  if(user_mode == 'DoubleI'){
+        return getNA(data);
+	  }
+    }  
+    else
+    {
+    //Show only the room number
+    return getNA(data);   
+    } 
+
+  }
+  function getNA(data){
+    var src='<td class="td_occp_na" title="'+data['room_occpname']+'" onclick="showName(this)"><p>'+data['room_num']+'</p></td>';
+	return src;
+  }
+  //Shorten the params
+  function get_type(room_type){
+  switch(room_type){
+  case 'Single':
+    return 'S';
+  break;
+  case 'Double':
+    return 'D';
+
+  case 'Deluxe':
+    return 'L';
+  break;
+
+  }
+  }
+function get_status(room_status){
+  if(room_status == 'Available'){
+    return 'A';
+  }
+  else{
+    return 'R';
+  }
+  }
+  //Loop through the blocks x first
+    for(var x=0;x<11;x++){
+      buildRow(x,data);
+    }
+  }); 
+}
+window.onload = get_user;
+
+/*----------------------
+*
+*Edit Function
+----------------------*/
+function showName(elem){
+var title = elem.title;
+var rnum = elem.firstChild.innerHTML;
+document.getElementById('rm_num').innerHTML = rnum;
+document.getElementById('rm_occp').innerHTML = title;
+}
+function clearRes(){
+var tb=document.getElementById('rbs_rblock_user');
+tb.innerHTML = '';
+
+}
+
+function rbid(pkey){
+console.log('Bidding for....' + pkey);
+var args ={
+  'cmd':'bid',
+  'pkey':pkey,
+  'umat':user_matric,
+  'upts':user_points,
+  'pt_id':user_party,
+  'pt_points':party_points
+};
+
+  socket.emit('rbs_blockadmin', args, function(data){
+    clearRes();
+    get_user();
+  });
+  leavebut(1);
+}
+function leaveRoom(){
+var args = {
+    'cmd':'leave'
+   ,'umat': user_matric
+   ,'pt_id': user_party
+  };
+console.log('Leaving room...');
+//Allow the user or party leader to leave the room and refund his points
+socket.emit('rbs_blockadmin', args , function(data){
+    console.log('Leave room: '+data);
+    clearRes();
+	get_user();
+  });
+}
+function pickblk(key){
+  var blk_arr = key.split('_');
+  document.getElementById(key).style.backgroundColor = 'rgb(18,18,26)';
+  var new_blk = blk_arr[1];
+  var old_blk = cur_block;
+  var old_blk_id = 'sblk_'+old_blk;
+  document.getElementById(old_blk_id).style.backgroundColor = 'rgb(25,171,134)';
+  //Change to the new block
+  cur_block = new_blk;
+  clearRes();
+  get_user();
+}
+//Party Functions
+function getParty(){
+  var args = {
+    'cmd' : 'party_status'
+   ,'p_key' : user_matric
+  }
+  console.log('Getting party status');
+  socket.emit('rbs_blockadmin', args, function(data){
+    if(data){
+      console.log('In party');
+	  console.log(data);
+	  data_list = data.split(',');
+
+	  user_party = data_list[0];
+	  player1 = data_list[0];
+	  player2 = data_list[1];
+	  
+	  if(player2 != 'Vacant'){
+
+	    console.log('User party: '+user_party);
+	    if( user_matric == user_party){
+	      user_mode ='Double';
+		  document.getElementById('res_mode').innerHTML = 'Double';
+	    }
+	    else{
+	      user_mode ='DoubleR';	
+		  document.getElementById('res_mode').innerHTML ='Double(Member)';
+		  leavebut(0);
+	    }
+
+	  pointsParty();
+	  }
+	  else{
+	  //return 0
+	  user_mode = 'DoubleI';
+	  document.getElementById('res_mode').innerHTML = 'Incomplete Party';
+	  }
+
+	}
+	else{
+	user_party = 0;
+	party_points = 'NA';
+	showPP();
+	document.getElementById('res_mode').innerHTML = 'Single';
+	  //return 0;	  
+	}
+  get_block();
+  });
+  
+}
+//Get the points of the party
+function showPP(){
+ document.getElementById('party_points').innerHTML = party_points;
+}
+function pointsParty(){
+var args= {
+    'cmd':'party_points'
+   ,'player1':user_party
+  };
+socket.emit('rbs_blockadmin', args, function(data){
+  party_points = data;
+  showPP();
+ });
+
+}
+
+</script>
+
+
+
+<h4>Raffes Hall Block Administration</h4>
+<table id='rbs_rblock_user'>
+
+</table>
+<h4>Choose the block</h4>
+<div id='rbs_rblock_select'>
+<span id='sblk_2' onclick='pickblk(this.id)'>Block 2</span>
+<span id='sblk_3' onclick='pickblk(this.id)'>Block 3</span>
+<span id='sblk_3A' onclick='pickblk(this.id)'>Block 3A</span>
+<span id='sblk_4' onclick='pickblk(this.id)'>Block 4</span>
+<span id='sblk_5' onclick='pickblk(this.id)'>Block 5</span>
+<span id='sblk_6' onclick='pickblk(this.id)'>Block 6</span>
+<br/>
+<h4>Resident Information</h4>
+<table>
+<tr><td>Name</td><td id='res_name'></td></tr>
+<tr><td>Points</td><td id='res_points'></td></tr>
+<tr><td>Room Allocated</td><td id='res_room'></td><td><span id='span_leave' class='p_create_button' onclick='leaveRoom()' >Leave</span></td></tr>
+<tr><td>Bidding Mode</td><td id='res_mode'></td></tr>
+<tr><td>Party Points</td><td id='party_points'></td></tr>
+</table>
+<h4>Room Information (Click on Room to View)</h4>
+<table>
+<tr><td>Room Selected</td><td id='rm_num'></td></tr>
+<tr><td>Room Occupant(s)</td><td id='rm_occp'></td></tr>
+</table>
+<h4>Legend</h4>
+<div class='but_leg'>
+<table>
+<tr><td>Room Types</td><td>(S) Single</td><td>(D) Double</td><td>(L) Single Large</td></tr>
+
+
+
+</table>
+</div>
+</div>
+
+

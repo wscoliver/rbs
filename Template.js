@@ -3,7 +3,7 @@ var fs = require('fs');
 var path = require('path');
 var async = require('async');
 //Variables for Async regexp for extend
- var block_path = '/home/nodeuser/nodeProjects/block/';
+ var block_path = '/home/rhcommotion/rbs_node/rbs/block/';
  var arr=[],
   s ,
   re=/%extends\s([\d\D]*?)\s\%end/gi,

@@ -1,0 +1,271 @@
+<script src='http://137.132.73.188:8881/socket.io/socket.io.js'></script>
+<script>
+//Globals
+var cur_block = 2;
+var max_block = 6;
+var blk_data;
+//End Globals
+  var socket = io.connect('http://137.132.73.188:8881');
+  socket.on ('news', function (data) {
+    //alert(data);
+    //socket.emit('my event', { my : 'data'});
+  });
+  
+var get_block = function(){
+  
+var  args = {'cmd': 'getblockhashes'
+         ,'block':cur_block
+
+         };
+
+  socket.emit('rbs_blockadmin', args, function(data){
+  //Build the table row
+    function buildHead(){
+    var tr_node = document.createElement('tr');
+	var tr_val = '';
+	  for (var i=-1;i<11;i++){
+       if(i!=-1){
+         tr_val+='<td>'+i+'</td>';
+	   }else{
+         tr_val+='<td>X/Y</td>';
+	   }
+	  }
+	tr_node.innerHTML = tr_val;
+	tr_node.id = 'block_y_head';
+	//document.getElementById('rbs_rblock').appendChild(tr_node);
+	}
+    function buildRow(x,data){
+	if( x == 0 ){
+      //Build headers
+	  buildHead();
+	}
+      var tr_node = document.createElement('tr');
+	  var tr_val = '';
+	  for(var y=0;y<11;y++){
+        plot_val = buildPlot(x,y,data);
+		tr_val+=plot_val;
+      
+	  }
+      tr_node.innerHTML = tr_val;
+	  tr_node.id = 'block_x_1';
+	  document.getElementById('rbs_rblock').appendChild(tr_node);
+	}
+  //Build the table plot
+  function buildPlot(x,y,data){
+  //Get the hash values
+  var hash_key = 'block'+cur_block+'_x'+x+'_y'+y;
+  var hash_data = data[hash_key];
+  return buildBox(hash_data, x, y);
+
+  }
+  //Build the table box
+  function buildBox(data, x, y){
+  var rt = get_type(data['room_type']),
+      rg = data['room_gender'],
+	  rp = data['room_points'],
+	  rs = get_status(data['room_status']);
+  var src = '';
+  var box_id = 'block'+cur_block+'_x'+x+'_y'+y;
+  var td_class= '';
+  var gender_class= '';
+  var type_class='';
+  var stat_class='';
+  if( data['room_num'] == 'Not set'){
+  //empty plot
+    td_class='td_empty';
+	src ='<td class="'+td_class+'" onclick="editBox(\''+box_id+'\')"><p class="blk_room">'+data['room_num']
+	 +'</p></td>';
+  }
+  else{
+  //occupied plot
+    td_class='td_occp';
+	 if( data['room_gender'] == 'M'){
+    gender_class='div_rg_m';
+    }
+    else{
+    gender_class='div_rg_f';
+    }
+    type_class='div_rt';
+	stat_class='div_rs';
+   src = '<td class="'+td_class+'"onclick="editBox(\''+box_id+'\')"><p class="blk_room">'+data['room_num']
+	 +'</p><div class="but_hold"><div class="'+gender_class+'">'+rg+'</div><div class="'+type_class+'">'+rt+'</div><div class="'+stat_class+'">'+rs+'</div></div></td>';
+
+  }
+  
+   
+    return src;
+  }
+  //Shorten the params
+  function get_type(room_type){
+  switch(room_type){
+  case 'Single':
+    return 'S';
+  break;
+  case 'Double':
+    return 'D';
+  break;
+  case 'Deluxe':
+    return 'DD';
+  break;
+
+  }
+  }
+function get_status(room_status){
+  if(room_status == 'Available'){
+    return 'A';
+  }
+  else{
+    return 'R';
+  }
+  }
+  //Loop through the blocks x first
+    for(var x=0;x<11;x++){
+      buildRow(x,data);
+    }
+  }); 
+}
+window.onload = get_block;
+
+/*----------------------
+*
+*Edit Function
+----------------------*/
+
+function clearRes(){
+var tb=document.getElementById('rbs_rblock');
+tb.innerHTML = '';
+
+}
+function editBox(key){
+sel_key = key;
+var args = {'cmd':'getplothash',
+            'key':key};
+
+socket.emit('rbs_blockadmin', args, function(data){
+
+//Get the changed variables
+document.getElementById('rbs_rblock_sel').innerHTML = key;
+document.getElementById('rbs_rblock_sel_num').value = data['room_num'];
+document.getElementById('rbs_rblock_sel_gender').value = data['room_gender'];
+document.getElementById('rbs_rblock_sel_type').value = data['room_type'];
+document.getElementById('rbs_rblock_sel_status').value = data['room_status'];
+document.getElementById('rm_occp').innerHTML = data['room_occpname'];
+//Set the edit table with values
+  });
+}
+function editPlot(){
+var key = document.getElementById('rbs_rblock_sel').innerHTML;
+var val = {'room_num':document.getElementById('rbs_rblock_sel_num').value
+          ,'room_gender':document.getElementById('rbs_rblock_sel_gender').value
+		  ,'room_type':document.getElementById('rbs_rblock_sel_type').value
+		  ,'room_status':document.getElementById('rbs_rblock_sel_status').value};
+var args = {'cmd':'setmhash',
+            'key':key,
+			'val':val};
+socket.emit('rbs_blockadmin',args, function(data){
+  clearRes();
+  get_block();
+
+});
+
+}
+/*----------------------
+*
+*Del Function
+----------------------*/ 
+function del(key, row){
+//Get the changed variables
+
+var args = {'cmd' : 'delhash',
+            'key' : key};
+//console.log(JSON.stringify(args));
+ socket.emit('rbs_res', args, function(data){
+ //  console.log('Reply: ' + data);
+    clearRes(); 
+   
+   get_resident();
+ });
+}
+/*
+function clearRes(){
+   var tb = document.getElementById('rbs_res');
+ while( tb.lastChild){
+      var ch_id = tb.lastChild.id;
+	  if( ch_id != ' '){
+
+        console.log('Removing...'+ch_id);
+        tb.removeChild(tb.lastChild);
+	  }
+   }
+
+}
+*/
+/*----------------------
+*
+*nextPage and prevPage Function
+----------------------*/ 
+function pickblk(key){
+  var blk_arr = key.split('_');
+  document.getElementById(key).style.backgroundColor = 'rgb(18,18,26)';
+  var new_blk = blk_arr[1];
+  var old_blk = cur_block;
+  var old_blk_id = 'sblk_'+old_blk;
+  document.getElementById(old_blk_id).style.backgroundColor = 'rgb(25,171,134)';
+  //Change to the new block
+  cur_block = new_blk;
+  clearRes();
+  get_block();
+}
+</script>
+
+
+
+<h4>Raffes Hall Block Administration</h4>
+<table id='rbs_rblock'>
+
+</table>
+<h4>Choose the block</h4>
+<div id='rbs_rblock_select'>
+<span id='sblk_2' onclick='pickblk(this.id)'>Block 2</span>
+<span id='sblk_3' onclick='pickblk(this.id)'>Block 3</span>
+<span id='sblk_3A' onclick='pickblk(this.id)'>Block 3A</span>
+<span id='sblk_4' onclick='pickblk(this.id)'>Block 4</span>
+<span id='sblk_5' onclick='pickblk(this.id)'>Block 5</span>
+<span id='sblk_6' onclick='pickblk(this.id)'>Block 6</span>
+<br/>
+<h4>Legend</h4>
+<div class='but_leg'>
+<table>
+<tr><td>Room Gender</td><td><div class="div_rg_m">M</div></td><td>Male</td><td><div class="div_rg_f">F</div></td><td>Female</td></tr>
+<tr><td>Room Type</td><td><div class="div_rt">S</div></td><td>Single</td><td><div class="div_rt">D</div></td><td>Double</td><td><div class="div_rt">DD</div></td><td>Deluxe</td></tr>
+<tr><td>Room Status</td><td><div class="div_rs">A</div></td><td>Available</td><td><div class="div_rs">R</div></td><td>Reserved</td></tr>
+
+
+
+</table>
+</div>
+<h4>Edit a Room</h4>
+<table id='rbs_rblock_edit'>
+  <tr><td></td><td id='rbs_rblock_sel' style='display: none' ></td></tr>
+  <tr><td>Room Number</td><td><input id='rbs_rblock_sel_num' type='text' /></td></tr>
+  <tr><td>Room Gender </td><td><select id='rbs_rblock_sel_gender'>
+      <option>M</option>
+	  <option>F</option>
+    </select></td></tr>
+  <tr><td>Room Type</td><td><select id='rbs_rblock_sel_type'>
+      <option>Single</option>
+	  <option>Double</option>
+	  <option>Deluxe</option>
+	</select></td></tr>
+  <tr><td>Room Status</td><td><select id='rbs_rblock_sel_status'>
+      <option>Available</option>
+	  <option>Reserved</option>
+	</select></td></tr>
+  <tr><td>Room Occupant</td><td id='rm_occp'></td></tr>
+  <tr><td></td><td><span onclick='editPlot()'>Save</span></td></tr>
+</table>
+
+
+</div>
+
+
