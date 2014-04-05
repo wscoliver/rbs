@@ -50,6 +50,10 @@ var loadRes = function(row, index){
   party_create(p1,p2,n1,n2);
 };
 //Read the csv file
+//<<<<<<< HEAD
 csv().from('/home/rhcommotion/rbs_node/rbs/addpt.csv').to(console.log).transform(loadRes);
+//=======
+//csv().from('/home/rhcommotion/rbs_node/rbs/rbspt2.csv').to(console.log).transform(loadRes);
+//>>>>>>> d1096b7d7566595d996119a70ab4dbb855389f4f
 
 
